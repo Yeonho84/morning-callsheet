@@ -1,0 +1,938 @@
+<title>모닝 콜시트</title>
+<style>
+  :root{
+    --bg:#f5f2ea;
+    --bg-sunk:#efebe1;
+    --card:#fbfaf5;
+    --ink:rgba(0,0,0,0.90);
+    --ink-soft:rgba(0,0,0,0.60);
+    --ink-faint:rgba(0,0,0,0.40);
+    --rule:rgba(0,0,0,0.09);
+    --rule-soft:rgba(0,0,0,0.06);
+    --hover:rgba(0,0,0,0.045);
+    --accent:#0b6bcb;
+    --on-accent:#ffffff;
+
+    --c-home:#37352f;
+    --c-ad:#d9502c;
+    --c-design:#7c5cfc;
+    --c-ai:#12876b;
+    --c-ref:#b8860b;
+
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+    --shadow-md: 0 8px 20px -8px rgba(0,0,0,0.16);
+    --shadow-lg: 0 16px 36px -12px rgba(0,0,0,0.22);
+
+    --sans: 'Inter', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'system-ui', 'Segoe UI', sans-serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+
+    --r-sm: 6px;
+    --r-md: 8px;
+    --r-lg: 12px;
+    --ease: cubic-bezier(.2,.7,.2,1);
+    --tabbar-h: 60px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#17160f; --bg-sunk:#1c1b13; --card:#201f16;
+      --ink:rgba(255,255,255,0.92); --ink-soft:rgba(255,255,255,0.62); --ink-faint:rgba(255,255,255,0.40);
+      --rule:rgba(255,255,255,0.10); --rule-soft:rgba(255,255,255,0.07); --hover:rgba(255,255,255,0.06);
+      --accent:#4ba0ff; --on-accent:#0b1420;
+      --c-home:#e9e9e7;
+      --c-ad:#ff8161; --c-design:#a996ff; --c-ai:#4fd6ac; --c-ref:#f0c25e;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.4);
+      --shadow-md: 0 8px 20px -8px rgba(0,0,0,0.55);
+      --shadow-lg: 0 16px 36px -12px rgba(0,0,0,0.6);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#17160f; --bg-sunk:#1c1b13; --card:#201f16;
+    --ink:rgba(255,255,255,0.92); --ink-soft:rgba(255,255,255,0.62); --ink-faint:rgba(255,255,255,0.40);
+    --rule:rgba(255,255,255,0.10); --rule-soft:rgba(255,255,255,0.07); --hover:rgba(255,255,255,0.06);
+    --accent:#4ba0ff; --on-accent:#0b1420;
+    --c-home:#e9e9e7;
+    --c-ad:#ff8161; --c-design:#a996ff; --c-ai:#4fd6ac; --c-ref:#f0c25e;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.4);
+    --shadow-md: 0 8px 20px -8px rgba(0,0,0,0.55);
+    --shadow-lg: 0 16px 36px -12px rgba(0,0,0,0.6);
+  }
+
+  *{ box-sizing:border-box; }
+  @media (prefers-reduced-motion: reduce){ *{ animation-duration:0.001ms !important; transition-duration:0.001ms !important; } }
+  html,body{ height:100%; }
+  body{ background:var(--bg); color:var(--ink); font-family:var(--sans); margin:0; overflow:hidden; -webkit-font-smoothing:antialiased; }
+  a{ color:inherit; }
+  button{ font-family:inherit; }
+  ::selection{ background:var(--accent); color:var(--on-accent); }
+
+  .app{ height:100%; display:flex; flex-direction:column; }
+
+  /* ---------- Top app bar ---------- */
+  .topbar{
+    height:calc(52px + env(safe-area-inset-top,0px)); padding-top:env(safe-area-inset-top,0px);
+    flex:none; display:flex; align-items:center; gap:8px; padding-inline:16px;
+    border-bottom:1px solid var(--rule); background:var(--bg); position:relative; z-index:10;
+  }
+  .topbar .brand{ display:flex; align-items:center; gap:9px; font-weight:700; font-size:15px; flex:1; min-width:0; }
+  .topbar .brand .mark{ width:24px; height:24px; border-radius:7px; background:var(--sc,var(--c-home)); flex:none; display:flex; align-items:center; justify-content:center; color:#fff; font-size:12px; font-weight:700; transition:background .2s var(--ease); }
+  .topbar .brand .today{ font-size:11.5px; color:var(--ink-faint); font-weight:400; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .iconbtn{
+    position:relative; width:32px; height:32px; border-radius:var(--r-sm); border:none; background:transparent;
+    color:var(--ink-soft); display:flex; align-items:center; justify-content:center; cursor:pointer; flex:none;
+    transition:background .15s var(--ease), color .15s var(--ease);
+  }
+  .iconbtn:hover{ background:var(--hover); color:var(--ink); }
+  .iconbtn svg{ width:18px; height:18px; }
+  .iconbtn .badge{
+    position:absolute; top:1px; right:1px; min-width:15px; height:15px; padding:0 3px; border-radius:999px;
+    background:var(--c-ad); color:#fff; font-size:9.5px; font-weight:700;
+    display:flex; align-items:center; justify-content:center; line-height:1;
+  }
+  .searchrow{ flex:none; overflow:hidden; max-height:0; transition:max-height .18s var(--ease); border-bottom:1px solid var(--rule); background:var(--bg); }
+  .searchrow.open{ max-height:52px; }
+  .searchrow .box{ display:flex; align-items:center; gap:8px; margin:8px 16px; background:var(--bg-sunk); border-radius:999px; padding:9px 14px; }
+  .searchrow svg{ width:15px; height:15px; color:var(--ink-faint); flex:none; }
+  .searchrow input{ width:100%; border:none; outline:none; background:transparent; color:var(--ink); font-family:var(--sans); font-size:14px; }
+  .searchrow input::placeholder{ color:var(--ink-faint); }
+
+  /* ---------- Shell ---------- */
+  .shell{ flex:1; display:flex; min-height:0; }
+  .rail{ display:none; }
+  main.views{ flex:1; min-width:0; position:relative; overflow:hidden; background:var(--bg-sunk); }
+  .view{ position:absolute; inset:0; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:20px 18px calc(28px + var(--tabbar-h) + env(safe-area-inset-bottom,0px)); animation:viewIn .16s var(--ease); }
+  @keyframes viewIn{ from{ opacity:0; transform:translateY(6px);} to{ opacity:1; transform:none; } }
+  .view .inner{ max-width:660px; margin:0 auto; }
+
+  /* ---------- Bottom tab bar ---------- */
+  .tabbar{ flex:none; display:flex; border-top:1px solid var(--rule); background:var(--bg); padding-bottom:env(safe-area-inset-bottom,0px); position:relative; z-index:10; }
+  .tabbar button{ flex:1; border:none; background:none; cursor:pointer; padding:8px 4px 7px; display:flex; flex-direction:column; align-items:center; gap:3px; color:var(--ink-faint); transition:color .15s var(--ease); }
+  .tabbar button svg{ width:20px; height:20px; }
+  .tabbar button span{ font-size:10px; font-weight:500; }
+  .tabbar button.active{ color:var(--tc); }
+  .tabbar button.homebtn{ border-right:1px solid var(--rule); }
+  .tabbar button[data-tab="home"]{ --tc:var(--c-home); }
+  .tabbar button[data-tab="ad"]{ --tc:var(--c-ad); }
+  .tabbar button[data-tab="design"]{ --tc:var(--c-design); }
+  .tabbar button[data-tab="ai"]{ --tc:var(--c-ai); }
+  .tabbar button[data-tab="ref"]{ --tc:var(--c-ref); }
+
+  @media (min-width:860px){
+    .tabbar{ display:none; }
+    .rail{ display:flex; flex-direction:column; width:230px; flex:none; border-right:1px solid var(--rule); background:var(--bg); padding:16px 10px; }
+    .rail .railtitle{ font-size:11px; font-weight:600; letter-spacing:.02em; color:var(--ink-faint); padding:4px 10px 12px; text-transform:uppercase; }
+    .rail button{ display:flex; align-items:center; gap:10px; border:none; background:none; cursor:pointer; padding:8px 10px; border-radius:var(--r-sm); color:var(--ink-soft); font-size:14px; font-weight:500; text-align:left; transition:background .15s var(--ease), color .15s var(--ease); }
+    .rail button:hover{ background:var(--hover); color:var(--ink); }
+    .rail button svg{ width:17px; height:17px; flex:none; color:var(--ink-faint); }
+    .rail button.active{ background:color-mix(in srgb, var(--tc) 12%, var(--bg)); color:var(--tc); font-weight:600; }
+    .rail button.active svg{ color:var(--tc); }
+    .rail button[data-tab="home"]{ --tc:var(--c-home); }
+    .rail button[data-tab="ad"]{ --tc:var(--c-ad); }
+    .rail button[data-tab="design"]{ --tc:var(--c-design); }
+    .rail button[data-tab="ai"]{ --tc:var(--c-ai); }
+    .rail button[data-tab="ref"]{ --tc:var(--c-ref); }
+    .rail .railfoot{ margin-top:auto; font-size:11px; color:var(--ink-faint); padding:10px; line-height:1.6; }
+    .rail .homebtn{ margin-bottom:10px; padding-bottom:10px; border-bottom:1px solid var(--rule); }
+    .view{ padding:28px 32px 40px; }
+    .view .inner{ max-width:700px; }
+  }
+
+  /* ---------- Home collage hero ---------- */
+  .collage{ display:flex; gap:2px; height:132px; border-radius:var(--r-lg); overflow:hidden; margin-bottom:10px; }
+  .collage .seg{ flex:1; min-width:0; border:none; padding:0; cursor:pointer; background-size:cover; background-position:center; transition:flex .2s var(--ease); }
+  .collage .seg:hover{ flex:1.15; }
+  .collage-cap{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin-bottom:22px; }
+  .collage-cap b{ font-size:14px; font-weight:700; }
+  .collage-cap span{ font-size:12px; color:var(--ink-faint); }
+
+  /* ---------- Home header ---------- */
+  .pageheader{ padding:0 0 6px; }
+  .pageheader .eyebrow{ font-size:12px; font-weight:600; color:var(--ink-faint); letter-spacing:.02em; margin-bottom:8px; }
+  .pageheader h1{ font-size:clamp(22px,5vw,28px); font-weight:700; margin:0 0 8px; letter-spacing:-.01em; color:var(--ink); text-wrap:balance; }
+  .pageheader p{ font-size:14px; color:var(--ink-soft); margin:0; line-height:1.6; }
+  .metarow{ display:flex; gap:16px; flex-wrap:wrap; margin-top:14px; font-size:12px; color:var(--ink-faint); }
+  .metarow span{ display:inline-flex; align-items:center; gap:5px; }
+  .metarow svg{ width:13px; height:13px; }
+
+  .sectiontitle{ font-size:12px; font-weight:600; color:var(--ink-faint); margin:26px 0 12px; letter-spacing:.01em; }
+  .sectiontitle:first-of-type{ margin-top:0; }
+
+  /* ---------- TL;DR feature-card grid ---------- */
+  .tldr{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  @media (max-width:560px){ .tldr{ grid-template-columns:1fr; } }
+  .tldr button.row{
+    --sc: var(--c-home);
+    display:flex; flex-direction:column; align-items:flex-start; gap:8px; text-align:left;
+    border:1px solid var(--rule); cursor:pointer; border-radius:var(--r-lg); padding:16px;
+    background:var(--card);
+    transition:background .15s var(--ease), transform .15s var(--ease), border-color .15s var(--ease);
+  }
+  .tldr button.row:hover{ background:var(--hover); border-color:var(--sc); transform:translateY(-1px); }
+  .tldr .icon{ width:26px; height:26px; border-radius:7px; display:flex; align-items:center; justify-content:center; background:color-mix(in srgb, var(--sc) 20%, var(--card)); color:var(--sc); }
+  .tldr .icon svg{ width:14px; height:14px; }
+  .tldr .txt{ font-size:13.5px; line-height:1.55; color:var(--ink); }
+  .tldr .txt b{ display:block; font-size:14.5px; font-weight:700; margin-bottom:3px; color:var(--ink); }
+  .tldr .go{ font-size:12px; color:var(--sc); font-weight:600; display:inline-flex; align-items:center; gap:4px; }
+
+  /* ---------- Quick category pills ---------- */
+  .pillrow{ display:flex; gap:8px; flex-wrap:wrap; }
+  .pillrow button{
+    --sc:var(--c-home);
+    display:inline-flex; align-items:center; gap:7px; border:1px solid var(--rule); cursor:pointer;
+    background:var(--card); color:var(--ink-soft);
+    padding:7px 13px; border-radius:999px; font-size:12.5px; font-weight:600;
+    transition:border-color .15s var(--ease), color .15s var(--ease);
+  }
+  .pillrow button::before{ content:""; width:6px; height:6px; border-radius:50%; background:var(--sc); }
+  .pillrow button:hover{ border-color:var(--sc); color:var(--sc); }
+  .pillrow button .n{ color:var(--ink-faint); font-size:11px; }
+
+  /* ---------- Element grid (home preview) ---------- */
+  .reelstrip{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+  @media (max-width:480px){ .reelstrip{ grid-template-columns:repeat(2,1fr); } }
+  .reelstrip button{ border:none; border-radius:var(--r-md); overflow:hidden; background:var(--card); cursor:pointer; padding:0; text-align:left; transition:transform .15s var(--ease); }
+  .reelstrip button:hover{ transform:translateY(-2px); }
+  .reelstrip .thumb{ aspect-ratio:1/1; background-size:cover; background-position:center; position:relative; }
+  .reelstrip .thumb::after{ content:""; position:absolute; inset:0; background:linear-gradient(180deg, rgba(0,0,0,0) 45%, rgba(0,0,0,.5) 100%); }
+  .reelstrip .cap{ padding:8px 10px; font-size:11.5px; color:var(--ink-soft); line-height:1.4; }
+  .reelstrip .cap b{ display:block; color:var(--ink); font-size:12px; font-weight:600; margin-bottom:2px; }
+
+  footer.appfoot{ margin-top:30px; padding-top:16px; border-top:1px solid var(--rule); font-size:11.5px; color:var(--ink-faint); line-height:1.8; }
+
+  /* ---------- Category header ---------- */
+  .cathead{ display:flex; align-items:center; gap:12px; margin-bottom:18px; }
+  .cathead .badge{ width:36px; height:36px; border-radius:var(--r-md); flex:none; display:flex; align-items:center; justify-content:center; background:color-mix(in srgb, var(--sc) 14%, var(--bg-sunk)); color:var(--sc); }
+  .cathead .badge svg{ width:18px; height:18px; }
+  .cathead .eyebrow{ font-size:12px; font-weight:600; color:var(--ink-faint); margin-bottom:2px; }
+  .cathead h2{ font-size:20px; font-weight:700; margin:0; color:var(--ink); }
+
+  /* ---------- Card grid (masonry-ish) ---------- */
+  .cardgrid{ column-gap:14px; }
+  @media (min-width:640px){ .cardgrid{ columns:2; } }
+
+  /* ---------- Cards ---------- */
+  .card{
+    position:relative; display:flex; gap:14px; align-items:flex-start;
+    background:var(--card); border:1px solid var(--rule);
+    border-radius:var(--r-lg); padding:14px; margin-bottom:12px;
+    break-inside:avoid;
+    transition:background .15s var(--ease), transform .15s var(--ease), border-color .15s var(--ease);
+  }
+  .card:hover{ border-color:var(--sc); transform:translateY(-1px); }
+  .card-media{ width:96px; height:96px; flex:none; border-radius:var(--r-md); overflow:hidden; background:color-mix(in srgb, var(--sc) 16%, var(--card)); display:flex; align-items:center; justify-content:center; color:var(--sc); }
+  .card-media img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .card-media svg{ width:26px; height:26px; opacity:.9; }
+  .card-body{ flex:1; min-width:0; }
+  .card .tag-row{ display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:6px; }
+  .src{ font-size:11.5px; font-weight:600; color:var(--sc); display:inline-flex; align-items:center; gap:5px; }
+  .src::before{ content:""; width:5px; height:5px; border-radius:50%; background:var(--sc); }
+  .savebtn{ border:none; background:none; cursor:pointer; padding:4px; color:var(--ink-faint); flex:none; display:flex; border-radius:6px; }
+  .savebtn:hover{ background:var(--hover); }
+  .savebtn svg{ width:16px; height:16px; }
+  .savebtn.saved{ color:var(--sc); }
+  .savebtn.saved svg{ fill:currentColor; }
+  .card h3{ font-size:15.5px; font-weight:700; margin:0 0 5px; line-height:1.35; color:var(--ink); }
+  .card h3 a{ text-decoration:none; }
+  .card h3 a:hover{ color:var(--sc); }
+  .card p{ font-size:13.2px; line-height:1.58; color:var(--ink-soft); margin:0 0 8px; }
+  .card .link{ font-size:12.5px; color:var(--sc); text-decoration:none; display:inline-flex; align-items:center; gap:4px; font-weight:600; }
+  .card .link svg{ width:11px; height:11px; }
+  .card[hidden]{ display:none; }
+
+  /* ---------- Reference clips ---------- */
+  .reel-note{ font-size:13px; color:var(--ink-soft); margin:-8px 0 16px; }
+  .clipgrid{ column-gap:14px; }
+  @media (min-width:640px){ .clipgrid{ columns:2; } }
+  .clip{ position:relative; border-radius:var(--r-lg); overflow:hidden; background:var(--card); border:1px solid var(--rule); margin-bottom:14px; break-inside:avoid; transition:border-color .18s var(--ease), transform .18s var(--ease); }
+  .clip:hover{ border-color:var(--c-ref); transform:translateY(-1px); }
+  .clip[hidden]{ display:none; }
+  .clip-poster{ position:relative; height:0; padding-bottom:42%; background-size:cover; background-position:center; display:flex; align-items:center; justify-content:center; }
+  .clip-poster::before{ content:""; position:absolute; inset:0; background:linear-gradient(180deg, rgba(0,0,0,.05) 45%, rgba(0,0,0,.45) 100%); }
+  .clip-play{ position:relative; z-index:1; width:38px; height:38px; border-radius:50%; background:rgba(255,255,255,.22); border:1.5px solid rgba(255,255,255,.9); display:flex; align-items:center; justify-content:center; backdrop-filter:blur(3px); }
+  .clip-play svg{ width:13px; height:13px; fill:#fff; margin-left:2px; }
+  .pencil{ position:absolute; z-index:1; top:10px; right:10px; font-size:10.5px; font-weight:600; color:#fff; background:rgba(20,20,20,.55); padding:4px 9px; border-radius:999px; backdrop-filter:blur(3px); }
+  .clip-save{ position:absolute; z-index:1; top:10px; left:10px; width:28px; height:28px; border-radius:50%; border:none; background:rgba(20,20,20,.45); color:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer; backdrop-filter:blur(3px); }
+  .clip-save svg{ width:14px; height:14px; }
+  .clip-save.saved{ color:var(--c-ref); }
+  .clip-save.saved svg{ fill:currentColor; }
+  .clip-body{ padding:15px 17px 17px; }
+  .clip .brand{ font-size:11px; color:var(--ink-faint); font-weight:600; margin-bottom:5px; }
+  .clip h3{ font-size:16.5px; font-weight:700; margin:0 0 10px; color:var(--ink); }
+  .clip h3 a{ text-decoration:none; }
+  .clip h3 a:hover{ color:var(--c-ref); }
+  .clip .label{ font-size:10.5px; font-weight:700; letter-spacing:.03em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:4px; }
+  .clip .synopsis{ font-size:13.2px; line-height:1.6; color:var(--ink); margin:0 0 11px; padding:11px 13px; background:var(--bg-sunk); border-radius:var(--r-md); }
+  .clip .credit{ font-size:12.6px; color:var(--ink-soft); margin:0 0 12px; line-height:1.55; }
+  .clip .link{ font-size:12.5px; color:var(--c-ref); text-decoration:none; display:inline-flex; align-items:center; gap:4px; font-weight:600; }
+  .clip .link svg{ width:11px; height:11px; }
+
+  .sourcelist{ display:grid; grid-template-columns:repeat(2,1fr); gap:8px; margin-top:10px; }
+  @media (max-width:480px){ .sourcelist{ grid-template-columns:1fr; } }
+  .sourcelist a{ display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--ink); background:var(--card); border-radius:var(--r-md); padding:11px 12px; transition:background .15s var(--ease); }
+  .sourcelist a:hover{ background:var(--hover); }
+  .sourcelist .icn{ width:30px; height:30px; border-radius:7px; background:color-mix(in srgb, var(--c-ref) 16%, var(--card)); color:var(--c-ref); display:flex; align-items:center; justify-content:center; flex:none; }
+  .sourcelist svg{ width:15px; height:15px; }
+  .sourcelist .t{ display:flex; flex-direction:column; gap:1px; min-width:0; }
+  .sourcelist .t b{ font-size:12.8px; font-weight:600; }
+  .sourcelist .desc{ color:var(--ink-faint); font-size:11px; }
+
+  .empty{ text-align:center; padding:48px 16px; color:var(--ink-faint); }
+  .empty svg{ width:32px; height:32px; margin-bottom:10px; opacity:.55; }
+  .empty p{ font-size:13.5px; margin:0; }
+
+  /* ---------- Bookmark sheet ---------- */
+  .sheet-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:30; opacity:0; pointer-events:none; transition:opacity .2s var(--ease); }
+  .sheet-backdrop.open{ opacity:1; pointer-events:auto; }
+  .sheet{ position:fixed; left:0; right:0; bottom:0; z-index:31; background:var(--card); border-radius:16px 16px 0 0; box-shadow:var(--shadow-lg); max-height:72vh; display:flex; flex-direction:column; transform:translateY(100%); transition:transform .22s var(--ease); padding-bottom:env(safe-area-inset-bottom,0px); }
+  .sheet.open{ transform:translateY(0); }
+  .sheet-head{ display:flex; align-items:center; justify-content:space-between; padding:16px 18px 10px; border-bottom:1px solid var(--rule-soft); }
+  .sheet-head h3{ font-size:15.5px; font-weight:700; margin:0; }
+  .sheet-list{ overflow-y:auto; padding:8px 10px 18px; }
+  .sheet-item{ display:flex; align-items:center; gap:11px; padding:10px 8px; border-radius:var(--r-sm); text-decoration:none; color:var(--ink); width:100%; border:none; background:none; cursor:pointer; font:inherit; }
+  .sheet-item:hover{ background:var(--hover); }
+  .sheet-item .dot{ width:7px; height:7px; border-radius:50%; flex:none; background:var(--sc); }
+  .sheet-item .txt{ flex:1; min-width:0; font-size:13.5px; text-align:left; }
+  .sheet-item .txt small{ display:block; color:var(--ink-faint); font-size:11px; margin-top:1px; }
+  .sheet-item .rm{ border:none; background:none; color:var(--ink-faint); cursor:pointer; padding:5px; flex:none; border-radius:6px; }
+  .sheet-item .rm:hover{ background:var(--hover); }
+  .sheet-item .rm svg{ width:15px; height:15px; }
+
+  @media (min-width:860px){
+    .sheet-backdrop, .sheet{ display:flex; }
+    .sheet{ left:auto; right:18px; bottom:18px; width:340px; border-radius:var(--r-lg); }
+  }
+
+  /* ===== Cover / Landing screen ===== */
+  .cover{ position:fixed; inset:0; z-index:80; background:var(--bg); overflow-y:auto; -webkit-overflow-scrolling:touch; }
+  .cover-inner{ max-width:600px; margin:0 auto; min-height:100%; padding:28px 20px 40px; display:flex; flex-direction:column; }
+  .cover-top{ display:flex; align-items:center; justify-content:space-between; }
+  .cover-mark{ font-size:11px; font-weight:700; letter-spacing:.06em; color:var(--ink-faint); }
+  .cover-skip{ background:none; border:none; font-family:inherit; font-size:12px; color:var(--ink-faint); cursor:pointer; padding:6px 2px; }
+  .cover-skip:hover{ color:var(--ink-soft); }
+  .cover-greet{ margin:36px 0 26px; }
+  .cover-eyebrow{ font-size:12px; font-weight:600; color:var(--ink-faint); margin-bottom:10px; }
+  .cover-greet h1{ margin:0; font-size:clamp(30px,7vw,44px); line-height:1.16; font-weight:700; letter-spacing:-0.02em; color:var(--ink); }
+  .greet-row{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .greet-play{ width:38px; height:38px; border-radius:50%; border:1px solid var(--rule); background:var(--card); color:var(--ink-soft); display:flex; align-items:center; justify-content:center; cursor:pointer; flex:none; padding:0; transition:border-color .18s var(--ease), color .18s var(--ease), transform .12s var(--ease); }
+  .greet-play svg{ width:17px; height:17px; }
+  .greet-play:hover{ border-color:var(--c-ref); color:var(--c-ref); }
+  .greet-play:active{ transform:scale(.92); }
+  .greet-play.playing{ border-color:var(--c-ref); color:var(--c-ref); animation:greetPulse 1s ease-in-out infinite; }
+  @keyframes greetPulse{ 0%,100%{ box-shadow:0 0 0 0 color-mix(in srgb, var(--c-ref) 35%, transparent); } 50%{ box-shadow:0 0 0 6px color-mix(in srgb, var(--c-ref) 0%, transparent); } }
+  .cover-greet-caption{ margin:12px 0 0; font-size:13px; line-height:1.6; color:var(--ink-soft); max-width:38ch; }
+  .cover-feature{ display:block; width:100%; text-align:left; background:var(--card); border:1px solid var(--rule); border-radius:var(--r-lg); overflow:hidden; }
+  .cover-feature-media{ display:block; position:relative; aspect-ratio:16/10; background-size:cover; background-position:center; background-color:var(--bg-sunk); cursor:pointer; transition:filter .18s var(--ease); }
+  .cover-feature-media:hover{ filter:brightness(0.94); }
+  .cover-feature-tag{ position:absolute; top:12px; left:12px; background:rgba(0,0,0,0.55); color:#fff; font-size:10.5px; font-weight:600; letter-spacing:.03em; padding:5px 10px; border-radius:999px; backdrop-filter:blur(2px); }
+  .cover-feature-play{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; }
+  .cover-feature-play span{ width:52px; height:52px; border-radius:50%; background:rgba(255,255,255,0.92); display:flex; align-items:center; justify-content:center; box-shadow:var(--shadow-md); transition:transform .18s var(--ease); }
+  .cover-feature-media:hover .cover-feature-play span{ transform:scale(1.08); }
+  .cover-feature-play svg{ width:18px; height:18px; margin-left:2px; color:#141312; }
+  .cover-feature-cap{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:14px 16px; flex-wrap:wrap; }
+  .cover-feature-cap b{ display:block; font-size:14.5px; font-weight:700; color:var(--ink); }
+  .cover-feature-cap span{ display:block; font-size:12px; color:var(--ink-faint); margin-top:3px; }
+  .cover-feature-link{ display:inline-flex; align-items:center; gap:6px; background:none; border:1px solid var(--rule); border-radius:999px; padding:8px 13px; font-size:12.5px; font-weight:600; color:var(--ink); cursor:pointer; font-family:inherit; white-space:nowrap; transition:border-color .18s var(--ease), color .18s var(--ease); }
+  .cover-feature-link:hover{ border-color:var(--c-ref); color:var(--c-ref); }
+  .cover-feature-link svg{ width:14px; height:14px; }
+  .cover-note{ margin:12px 2px 0; font-size:12px; color:var(--ink-faint); }
+  .cover-cta{ margin-top:auto; padding-top:32px; display:flex; flex-wrap:wrap; align-items:center; gap:14px; }
+  .cover-cta button{ font-family:inherit; border:none; cursor:pointer; }
+  #btnEnterApp{ background:var(--ink); color:var(--bg); font-size:14.5px; font-weight:700; padding:14px 22px; border-radius:999px; display:inline-flex; align-items:center; gap:8px; box-shadow:var(--shadow-sm); transition:transform .18s var(--ease); }
+  #btnEnterApp:hover{ transform:translateY(-1px); }
+  #btnEnterApp svg{ width:15px; height:15px; }
+  .cover-cta-meta{ font-size:12px; color:var(--ink-faint); }
+  @media (min-width:640px){
+    .cover-inner{ padding:56px 40px 56px; justify-content:center; }
+    .cover-greet{ margin:0 0 30px; }
+    .cover-cta{ padding-top:34px; }
+  }
+</style>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+
+<div class="cover" id="cover">
+  <div class="cover-inner">
+    <div class="cover-top">
+      <span class="cover-mark">MZ CORP · 제작팀</span>
+      <button class="cover-skip" id="btnSkipCover" data-cover-action="enter">건너뛰고 바로 보기 →</button>
+    </div>
+
+    <div class="cover-greet">
+      <div class="cover-eyebrow">{{DATE_FULL}}</div>
+      <div class="greet-row">
+        <h1 id="worldGreeting">Buongiorno</h1>
+        <button class="greet-play" id="btnPlayGreeting" type="button" aria-label="발음 듣기">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 6a9 9 0 0 1 0 12" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="cover-greet-caption" id="worldGreetingCaption">🇮🇹 이탈리아어 인사말 · "좋은 아침"이라는 뜻이에요</div>
+    </div>
+
+    <div class="cover-feature">
+      <a class="cover-feature-media" href="{{FEATURED_URL}}" target="_blank" rel="noopener" aria-label="영상 페이지로 이동 (새 탭)" style="background-image:url('{{FEATURED_IMG}}')">
+        <span class="cover-feature-tag">{{FEATURED_TAG}}</span>
+        <div class="cover-feature-play"><span><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l14 8-14 8V4z"/></svg></span></div>
+      </a>
+      <div class="cover-feature-cap">
+        <div>
+          <b>{{FEATURED_TITLE}}</b>
+          <span>{{FEATURED_BRAND}}</span>
+        </div>
+        <button class="cover-feature-link" data-goto="ref" data-clip="{{FEATURED_CLIP_ID}}" data-cover-action="enter">브리프에서 보기<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+      </div>
+    </div>
+    <p class="cover-note">{{FEATURED_NOTE}}</p>
+
+    <div class="cover-cta">
+      <button id="btnEnterApp" data-cover-action="enter">오늘의 브리프 보기<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+      <span class="cover-cta-meta">광고·디자인·AI·레퍼런스 12개 아이템 · 약 4분</span>
+    </div>
+  </div>
+</div>
+
+<div class="app" hidden>
+  <div class="topbar" id="topbar">
+    <button class="iconbtn" id="btnBackToCover" data-cover-return aria-label="뒤로가기 (대문 화면)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
+    <div class="brand"><span class="mark" id="topMark">M</span><span id="topTitle">모닝 콜시트</span><span class="today">· {{DATE_SHORT}}</span></div>
+    <button class="iconbtn" id="btnSearch" aria-label="검색"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></button>
+    <button class="iconbtn" id="btnSaved" aria-label="저장됨"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h12v18l-6-4-6 4V3z"/></svg><span class="badge" id="savedBadge" hidden>0</span></button>
+  </div>
+  <div class="searchrow" id="searchRow"><div class="box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input type="text" id="searchInput" placeholder="이 화면에서 검색…" autocomplete="off"></div></div>
+
+  <div class="shell">
+    <nav class="rail" id="rail">
+      <div class="railtitle">모닝 콜시트</div>
+      <button class="homebtn" data-cover-return><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg>홈</button>
+      <button data-tab="home" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>브리프</button>
+      <button data-tab="ad"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 10v4h2l9-5v11l-9-5H3"/><path d="M14 8a4 4 0 0 1 0 8"/><path d="M17.5 6a8 8 0 0 1 0 12"/></svg>광고업계</button>
+      <button data-tab="design"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2a10 10 0 1 0 5.657 18.243 2 2 0 0 0-1.414-3.414H14a2 2 0 0 1-2-2 2 2 0 0 1 2-2h3a2 2 0 0 0 2-2 10 10 0 0 0-7-8.829"/></svg>디자인·전시</button>
+      <button data-tab="ai"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/><circle cx="12" cy="12" r="4.5"/></svg>AI 시그널</button>
+      <button data-tab="ref"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2.5" y="5" width="19" height="14" rx="1.5"/><path d="M2.5 9h19M7 5v4M12 5v4M17 5v4M7 15v4M12 15v4M17 15v4"/></svg>레퍼런스 릴</button>
+      <div class="railfoot">월·수·금 오전 9시(KST)<br>업데이트 · 다음 브리프 {{NEXT_BRIEF}}</div>
+    </nav>
+
+    <main class="views">
+      <!-- HOME -->
+      <section class="view" id="view-home" data-c="home">
+        <div class="inner">
+          <div class="eyebrow">CD DAILY INTELLIGENCE · MZ CORP 제작팀</div>
+          <div class="collage" aria-label="오늘의 하이라이트">
+            <button class="seg" data-goto="ad" style="background-image:url('{{AD1_IMG}}')" aria-label="광고업계로 이동"></button>
+            <button class="seg" data-goto="design" style="background-image:url('{{DE2_IMG}}')" aria-label="디자인·전시로 이동"></button>
+            <button class="seg" data-goto="ref" data-clip="{{FEATURED_CLIP_ID}}" style="background-image:url('{{FEATURED_IMG}}')" aria-label="레퍼런스 릴로 이동"></button>
+          </div>
+          <div class="collage-cap"><b>오늘의 하이라이트</b><span>MZ Corp 제작팀 · 12개 아이템</span></div>
+
+          <div class="pageheader">
+            <h1>오늘의 브리프입니다</h1>
+            <p>광고·디자인·AI·레퍼런스 4개 카테고리, 약 4분 분량으로 정리했습니다.</p>
+            <div class="metarow">
+              <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>{{DATE_FULL}}</span>
+              <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>12개 아이템</span>
+            </div>
+          </div>
+
+          <div class="sectiontitle">오늘의 한 줄 요약</div>
+          <div class="tldr">
+            <button class="row" data-goto="ad" style="--sc:var(--c-ad)">
+              <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 10v4h2l9-5v11l-9-5H3"/><path d="M14 8a4 4 0 0 1 0 8"/></svg></span>
+              <span class="txt"><b>광고업계</b>{{TLDR_AD}}</span>
+              <span class="go">자세히 보기 →</span>
+            </button>
+            <button class="row" data-goto="design" style="--sc:var(--c-design)">
+              <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2a10 10 0 1 0 5.657 18.243 2 2 0 0 0-1.414-3.414H14a2 2 0 0 1-2-2 2 2 0 0 1 2-2h3a2 2 0 0 0 2-2 10 10 0 0 0-7-8.829"/></svg></span>
+              <span class="txt"><b>디자인·전시</b>{{TLDR_DESIGN}}</span>
+              <span class="go">자세히 보기 →</span>
+            </button>
+            <button class="row" data-goto="ai" style="--sc:var(--c-ai)">
+              <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></span>
+              <span class="txt"><b>AI 시그널</b>{{TLDR_AI}}</span>
+              <span class="go">자세히 보기 →</span>
+            </button>
+            <button class="row" data-goto="ref" style="--sc:var(--c-ref)">
+              <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2.5" y="5" width="19" height="14" rx="1.5"/><path d="M2.5 9h19"/></svg></span>
+              <span class="txt"><b>레퍼런스 릴</b>{{TLDR_REF}}</span>
+              <span class="go">자세히 보기 →</span>
+            </button>
+          </div>
+
+          <div class="sectiontitle">카테고리 바로가기</div>
+          <div class="pillrow">
+            <button data-goto="ad" style="--sc:var(--c-ad)">광고업계 <span class="n">3</span></button>
+            <button data-goto="design" style="--sc:var(--c-design)">디자인·전시 <span class="n">2</span></button>
+            <button data-goto="ai" style="--sc:var(--c-ai)">AI 시그널 <span class="n">2</span></button>
+            <button data-goto="ref" style="--sc:var(--c-ref)">레퍼런스 릴 <span class="n">5</span></button>
+          </div>
+
+          <div class="sectiontitle">레퍼런스 릴 미리보기</div>
+          <div class="reelstrip">
+            <button data-goto="ref" data-clip="clip-1"><div class="thumb" style="background-image:url('{{REF1_IMG}}')"></div><div class="cap"><b>{{REF1_SHORTTITLE}}</b>{{REF1_SHORTBRAND}}</div></button>
+            <button data-goto="ref" data-clip="clip-2"><div class="thumb" style="background-image:url('{{REF2_IMG}}')"></div><div class="cap"><b>{{REF2_SHORTTITLE}}</b>{{REF2_SHORTBRAND}}</div></button>
+            <button data-goto="ref" data-clip="clip-4"><div class="thumb" style="background-image:url('{{REF4_IMG}}')"></div><div class="cap"><b>{{REF4_SHORTTITLE}}</b>{{REF4_SHORTBRAND}}</div></button>
+            <button data-goto="ref" data-clip="clip-3"><div class="thumb" style="background-image:url('{{REF3_IMG}}')"></div><div class="cap"><b>{{REF3_SHORTTITLE}}</b>{{REF3_SHORTBRAND}}</div></button>
+            <button data-goto="ref" data-clip="clip-5"><div class="thumb" style="background-image:url('{{REF5_IMG}}')"></div><div class="cap"><b>{{REF5_SHORTTITLE}}</b>{{REF5_SHORTBRAND}}</div></button>
+          </div>
+
+          <footer class="appfoot">발행 주기 — 월·수·금 오전 9시(KST) · 다음 브리프 {{NEXT_BRIEF}}<br>소스 — Madtimes · VML · Marketing Dive · Frieze · Dezeen · HBR · D&amp;AD/Cut+Run/LBBonline</footer>
+        </div>
+      </section>
+
+      <!-- AD -->
+      <section class="view" id="view-ad" data-c="ad" hidden>
+        <div class="inner">
+          <div class="cathead" style="--sc:var(--c-ad)">
+            <div class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 10v4h2l9-5v11l-9-5H3"/><path d="M14 8a4 4 0 0 1 0 8"/><path d="M17.5 6a8 8 0 0 1 0 12"/></svg></div>
+            <div><div class="eyebrow">Scene 01 · Ad Industry</div><h2>광고업계 동향</h2></div>
+          </div>
+
+          <div class="cardgrid">
+          <div class="card" data-id="ad-1" data-kw="{{AD1_KW}}" style="--sc:var(--c-ad)">
+            <div class="card-media"><img src="{{AD1_IMG}}" alt="" loading="lazy"></div>
+            <div class="card-body">
+              <div class="tag-row"><span class="src">{{AD1_SRC}}</span><button class="savebtn" data-save="ad-1" aria-label="저장"><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none"><path d="M6 3h12v18l-6-4-6 4V3z"/></svg></button></div>
+              <h3><a href="{{AD1_URL}}" target="_blank" rel="noopener">{{AD1_TITLE}}</a></h3>
+              <p>{{AD1_SUMMARY}}</p>
+              <a class="link" href="{{AD1_URL}}" target="_blank" rel="noopener">기사 읽기 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+            </div>
+          </div>
+
+          <div class="card" data-id="ad-2" data-kw="{{AD2_KW}}" style="--sc:var(--c-ad)">
+            <div class="card-media"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 4h16v12H8l-4 4V4z"/><path d="M8 9h8M8 12h5"/></svg></div>
+            <div class="card-body">
+              <div class="tag-row"><span class="src">{{AD2_SRC}}</span><button class="savebtn" data-save="ad-2" aria-label="저장"><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none"><path d="M6 3h12v18l-6-4-6 4V3z"/></svg></button></div>
+              <h3><a href="{{AD2_URL}}" target="_blank" rel="noopener">{{AD2_TITLE}}</a></h3>
+              <p>{{AD2_SUMMARY}}</p>
+              <a class="link" href="{{AD2_URL}}" target="_blank" rel="noopener">기사 읽기 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+            </div>
+          </div>
+
+          <div class="card" data-id="ad-3" data-kw="{{AD3_KW}}" style="--sc:var(--c-ad)">
+            <div class="card-media"><img src="{{AD3_IMG}}" alt="" loading="lazy"></div>
+            <div class="card-body">
+              <div class="tag-row"><span class="src">{{AD3_SRC}}</span><button class="savebtn" data-save="ad-3" aria-label="저장"><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none"><path d="M6 3h12v18l-6-4-6 4V3z"/></svg></button></div>
+              <h3><a href="{{AD3_URL}}" target="_blank" rel="noopener">{{AD3_TITLE}}</a></h3>
+              <p>{{AD3_SUMMARY}}</p>
+              <a class="link" href="{{AD3_URL}}" target="_blank" rel="noopener">기사 읽기 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+            </div>
+          </div>
+          </div>
+
+          <div class="empty" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><p>검색 결과가 없습니다.</p></div>
+        </div>
+      </section>
+
+      <!-- DESIGN -->
+      <section class="view" id="view-design" data-c="design" hidden>
+        <div class="inner">
+          <div class="cathead" style="--sc:var(--c-design)">
+            <div class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2a10 10 0 1 0 5.657 18.243 2 2 0 0 0-1.414-3.414H14a2 2 0 0 1-2-2 2 2 0 0 1 2-2h3a2 2 0 0 0 2-2 10 10 0 0 0-7-8.829"/></svg></div>
+            <div><div class="eyebrow">Scene 02 · Design &amp; Exhibitions</div><h2>디자인 · 전시</h2></div>
+          </div>
+
+          <div class="cardgrid">
+          <div class="card" data-id="de-1" data-kw="{{DE1_KW}}" style="--sc:var(--c-design)">
+            <div class="card-media"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 21l7-15 4 8 3-5 4 12H3z"/><circle cx="8" cy="5" r="1.6"/></svg></div>
+            <div class="card-body">
+              <div class="tag-row"><span class="src">{{DE1_SRC}}</span><button class="savebtn" data-save="de-1" aria-label="저장"><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none"><path d="M6 3h12v18l-6-4-6 4V3z"/></svg></button></div>
+              <h3><a href="{{DE1_URL}}" target="_blank" rel="noopener">{{DE1_TITLE}}</a></h3>
+              <p>{{DE1_SUMMARY}}</p>
+              <a class="link" href="{{DE1_URL}}" target="_blank" rel="noopener">기사 읽기 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+            </div>
+          </div>
+
+          <div class="card" data-id="de-2" data-kw="{{DE2_KW}}" style="--sc:var(--c-design)">
+            <div class="card-media"><img src="{{DE2_IMG}}" alt="" loading="lazy"></div>
+            <div class="card-body">
+              <div class="tag-row"><span class="src">{{DE2_SRC}}</span><button class="savebtn" data-save="de-2" aria-label="저장"><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none"><path d="M6 3h12v18l-6-4-6 4V3z"/></svg></button></div>
+              <h3><a href="{{DE2_URL}}" target="_blank" rel="noopener">{{DE2_TITLE}}</a></h3>
+              <p>{{DE2_SUMMARY}}</p>
+              <a class="link" href="{{DE2_URL}}" target="_blank" rel="noopener">기사 읽기 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+            </div>
+          </div>
+          </div>
+
+          <div class="empty" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><p>검색 결과가 없습니다.</p></div>
+        </div>
+      </section>
+
+      <!-- AI -->
+      <section class="view" id="view-ai" data-c="ai" hidden>
+        <div class="inner">
+          <div class="cathead" style="--sc:var(--c-ai)">
+            <div class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/><circle cx="12" cy="12" r="4.5"/></svg></div>
+            <div><div class="eyebrow">Scene 03 · AI Signal</div><h2>AI 시그널</h2></div>
+          </div>
+
+          <div class="cardgrid">
+          <div class="card" data-id="ai-1" data-kw="{{AI1_KW}}" style="--sc:var(--c-ai)">
+            <div class="card-media"><img src="{{AI1_IMG}}" alt="" loading="lazy"></div>
+            <div class="card-body">
+              <div class="tag-row"><span class="src">{{AI1_SRC}}</span><button class="savebtn" data-save="ai-1" aria-label="저장"><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none"><path d="M6 3h12v18l-6-4-6 4V3z"/></svg></button></div>
+              <h3><a href="{{AI1_URL}}" target="_blank" rel="noopener">{{AI1_TITLE}}</a></h3>
+              <p>{{AI1_SUMMARY}}</p>
+              <a class="link" href="{{AI1_URL}}" target="_blank" rel="noopener">기사 읽기 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+            </div>
+          </div>
+
+          <div class="card" data-id="ai-2" data-kw="{{AI2_KW}}" style="--sc:var(--c-ai)">
+            <div class="card-media"><img src="{{AI2_IMG}}" alt="" loading="lazy"></div>
+            <div class="card-body">
+              <div class="tag-row"><span class="src">{{AI2_SRC}}</span><button class="savebtn" data-save="ai-2" aria-label="저장"><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none"><path d="M6 3h12v18l-6-4-6 4V3z"/></svg></button></div>
+              <h3><a href="{{AI2_URL}}" target="_blank" rel="noopener">{{AI2_TITLE}}</a></h3>
+              <p>{{AI2_SUMMARY}}</p>
+              <a class="link" href="{{AI2_URL}}" target="_blank" rel="noopener">기사 읽기 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+            </div>
+          </div>
+          </div>
+
+          <div class="empty" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><p>검색 결과가 없습니다.</p></div>
+        </div>
+      </section>
+
+      <!-- REFERENCE -->
+      <section class="view" id="view-ref" data-c="ref" hidden>
+        <div class="inner">
+          <div class="cathead" style="--sc:var(--c-ref)">
+            <div class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2.5" y="5" width="19" height="14" rx="1.5"/><path d="M2.5 9h19M7 5v4M12 5v4M17 5v4M7 15v4M12 15v4M17 15v4"/></svg></div>
+            <div><div class="eyebrow">Scene 04 · Reference Reel</div><h2>레퍼런스 릴</h2></div>
+          </div>
+          <p class="reel-note">D&amp;AD 2026 펜슬 수상작 다섯 편. 시놉시스로 내용을 먼저 확인하고, 썸네일을 누르면 원본 영상으로 이동합니다.</p>
+
+          <div class="clipgrid">
+            <div class="clip" id="clip-1" data-id="ref-1" data-kw="{{REF1_KW}}">
+              <a href="{{REF1_URL}}" target="_blank" rel="noopener" class="clip-poster" style="background-image:url('{{REF1_IMG}}')"><div class="clip-play"><svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8V4z"/></svg></div></a>
+              <button class="clip-save" data-save="ref-1" aria-label="저장"><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none"><path d="M6 3h12v18l-6-4-6 4V3z"/></svg></button>
+              <span class="pencil">{{REF1_PENCIL}}</span>
+              <div class="clip-body">
+                <div class="brand">{{REF1_BRAND}}</div>
+                <h3><a href="{{REF1_URL}}" target="_blank" rel="noopener">{{REF1_TITLE}}</a></h3>
+                <div class="label">시놉시스</div>
+                <p class="synopsis">{{REF1_SYNOPSIS}}</p>
+                <p class="credit">{{REF1_CREDIT}}</p>
+                <a class="link" href="{{REF1_URL}}" target="_blank" rel="noopener">시청 / 크레딧 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+              </div>
+            </div>
+
+            <div class="clip" id="clip-2" data-id="ref-2" data-kw="{{REF2_KW}}">
+              <a href="{{REF2_URL}}" target="_blank" rel="noopener" class="clip-poster" style="background-image:url('{{REF2_IMG}}')"><div class="clip-play"><svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8V4z"/></svg></div></a>
+              <button class="clip-save" data-save="ref-2" aria-label="저장"><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none"><path d="M6 3h12v18l-6-4-6 4V3z"/></svg></button>
+              <span class="pencil">{{REF2_PENCIL}}</span>
+              <div class="clip-body">
+                <div class="brand">{{REF2_BRAND}}</div>
+                <h3><a href="{{REF2_URL}}" target="_blank" rel="noopener">{{REF2_TITLE}}</a></h3>
+                <div class="label">시놉시스</div>
+                <p class="synopsis">{{REF2_SYNOPSIS}}</p>
+                <p class="credit">{{REF2_CREDIT}}</p>
+                <a class="link" href="{{REF2_URL}}" target="_blank" rel="noopener">시청 / 크레딧 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+              </div>
+            </div>
+
+            <div class="clip" id="clip-3" data-id="ref-3" data-kw="{{REF3_KW}}">
+              <a href="{{REF3_URL}}" target="_blank" rel="noopener" class="clip-poster" style="background-image:url('{{REF3_IMG}}')"><div class="clip-play"><svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8V4z"/></svg></div></a>
+              <button class="clip-save" data-save="ref-3" aria-label="저장"><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none"><path d="M6 3h12v18l-6-4-6 4V3z"/></svg></button>
+              <span class="pencil">{{REF3_PENCIL}}</span>
+              <div class="clip-body">
+                <div class="brand">{{REF3_BRAND}}</div>
+                <h3><a href="{{REF3_URL}}" target="_blank" rel="noopener">{{REF3_TITLE}}</a></h3>
+                <div class="label">시놉시스</div>
+                <p class="synopsis">{{REF3_SYNOPSIS}}</p>
+                <p class="credit">{{REF3_CREDIT}}</p>
+                <a class="link" href="{{REF3_URL}}" target="_blank" rel="noopener">시청 / 크레딧 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+              </div>
+            </div>
+
+            <div class="clip" id="clip-4" data-id="ref-4" data-kw="{{REF4_KW}}">
+              <a href="{{REF4_URL}}" target="_blank" rel="noopener" class="clip-poster" style="background-image:url('{{REF4_IMG}}')"><div class="clip-play"><svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8V4z"/></svg></div></a>
+              <button class="clip-save" data-save="ref-4" aria-label="저장"><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none"><path d="M6 3h12v18l-6-4-6 4V3z"/></svg></button>
+              <span class="pencil">{{REF4_PENCIL}}</span>
+              <div class="clip-body">
+                <div class="brand">{{REF4_BRAND}}</div>
+                <h3><a href="{{REF4_URL}}" target="_blank" rel="noopener">{{REF4_TITLE}}</a></h3>
+                <div class="label">시놉시스</div>
+                <p class="synopsis">{{REF4_SYNOPSIS}}</p>
+                <p class="credit">{{REF4_CREDIT}}</p>
+                <a class="link" href="{{REF4_URL}}" target="_blank" rel="noopener">시청 / 크레딧 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+              </div>
+            </div>
+
+            <div class="clip" id="clip-5" data-id="ref-5" data-kw="{{REF5_KW}}">
+              <a href="{{REF5_URL}}" target="_blank" rel="noopener" class="clip-poster" style="background-image:url('{{REF5_IMG}}')"><div class="clip-play"><svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8V4z"/></svg></div></a>
+              <button class="clip-save" data-save="ref-5" aria-label="저장"><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none"><path d="M6 3h12v18l-6-4-6 4V3z"/></svg></button>
+              <span class="pencil">{{REF5_PENCIL}}</span>
+              <div class="clip-body">
+                <div class="brand">{{REF5_BRAND}}</div>
+                <h3><a href="{{REF5_URL}}" target="_blank" rel="noopener">{{REF5_TITLE}}</a></h3>
+                <div class="label">시놉시스</div>
+                <p class="synopsis">{{REF5_SYNOPSIS}}</p>
+                <p class="credit">{{REF5_CREDIT}}</p>
+                <a class="link" href="{{REF5_URL}}" target="_blank" rel="noopener">시청 / 크레딧 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+              </div>
+            </div>
+          </div>
+
+          <div class="empty" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><p>검색 결과가 없습니다.</p></div>
+
+          <p style="font-size:11.5px;color:var(--ink-faint);margin:24px 0 10px;font-weight:600;">직접 체크할 소스</p>
+          <div class="sourcelist">
+            <a href="https://vimeo.com/channels/staffpicks" target="_blank" rel="noopener"><span class="icn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg></span><span class="t"><b>Vimeo Staff Picks</b><span class="desc">단편·실험 영상</span></span></a>
+            <a href="https://www.adsoftheworld.com/" target="_blank" rel="noopener"><span class="icn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></span><span class="t"><b>Ads of the World</b><span class="desc">클리오 네트워크</span></span></a>
+            <a href="https://cutandrun.com/" target="_blank" rel="noopener"><span class="icn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 5v14M17 5v14M3 10h4M17 10h4M3 15h4M17 15h4"/></svg></span><span class="t"><b>Cut+Run</b><span class="desc">수상작·프로덕션</span></span></a>
+            <a href="https://lbbonline.com/" target="_blank" rel="noopener"><span class="icn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V5a2 2 0 0 1 2-2h9l5 5v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M15 3v5h5"/></svg></span><span class="t"><b>LBBonline</b><span class="desc">업계 뉴스 + award</span></span></a>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <nav class="tabbar" id="tabbar">
+    <button class="homebtn" data-cover-return><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg><span>홈</span></button>
+    <button data-tab="home" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg><span>브리프</span></button>
+    <button data-tab="ad"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 10v4h2l9-5v11l-9-5H3"/><path d="M14 8a4 4 0 0 1 0 8"/><path d="M17.5 6a8 8 0 0 1 0 12"/></svg><span>광고</span></button>
+    <button data-tab="design"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2a10 10 0 1 0 5.657 18.243 2 2 0 0 0-1.414-3.414H14a2 2 0 0 1-2-2 2 2 0 0 1 2-2h3a2 2 0 0 0 2-2 10 10 0 0 0-7-8.829"/></svg><span>디자인</span></button>
+    <button data-tab="ai"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/><circle cx="12" cy="12" r="4.5"/></svg><span>AI</span></button>
+    <button data-tab="ref"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2.5" y="5" width="19" height="14" rx="1.5"/><path d="M2.5 9h19M7 5v4M12 5v4M17 5v4M7 15v4M12 15v4M17 15v4"/></svg><span>레퍼런스</span></button>
+  </nav>
+</div>
+
+<div class="sheet-backdrop" id="sheetBackdrop"></div>
+<div class="sheet" id="sheet" role="dialog" aria-label="저장된 아이템">
+  <div class="sheet-head"><h3>저장된 아이템</h3><button class="iconbtn" id="btnCloseSheet" aria-label="닫기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="sheet-list" id="sheetList"></div>
+</div>
+
+<script>
+(function(){
+  try{
+    var COLORS = {home:'var(--c-home)', ad:'var(--c-ad)', design:'var(--c-design)', ai:'var(--c-ai)', ref:'var(--c-ref)'};
+    var LABELS = {
+      'ad-1':'{{AD1_LABEL}}','ad-2':'{{AD2_LABEL}}','ad-3':'{{AD3_LABEL}}',
+      'de-1':'{{DE1_LABEL}}','de-2':'{{DE2_LABEL}}',
+      'ai-1':'{{AI1_LABEL}}','ai-2':'{{AI2_LABEL}}',
+      'ref-1':'{{REF1_LABEL}}','ref-2':'{{REF2_LABEL}}','ref-3':'{{REF3_LABEL}}','ref-4':'{{REF4_LABEL}}','ref-5':'{{REF5_LABEL}}'
+    };
+    var SECOF = {}; ['ad-1','ad-2','ad-3'].forEach(function(k){SECOF[k]='ad';});
+    ['de-1','de-2'].forEach(function(k){SECOF[k]='design';});
+    ['ai-1','ai-2'].forEach(function(k){SECOF[k]='ai';});
+    ['ref-1','ref-2','ref-3','ref-4','ref-5'].forEach(function(k){SECOF[k]='ref';});
+
+    var WORLD_GREETINGS = [
+      {text:'Buongiorno', code:'it-IT', flag:'🇮🇹', lang:'이탈리아어', meaning:'"좋은 아침"이라는 뜻이에요'},
+      {text:'Bonjour', code:'fr-FR', flag:'🇫🇷', lang:'프랑스어', meaning:'"좋은 하루"라는 뜻으로 하루 종일 쓰는 인사예요'},
+      {text:'Guten Morgen', code:'de-DE', flag:'🇩🇪', lang:'독일어', meaning:'"좋은 아침"이라는 뜻이에요'},
+      {text:'おはようございます', code:'ja-JP', flag:'🇯🇵', lang:'일본어', meaning:'이른 시간을 챙기는 정중한 아침 인사예요'},
+      {text:'早上好', code:'zh-CN', flag:'🇨🇳', lang:'중국어', meaning:'"아침이 좋다"는 뜻 그대로예요'},
+      {text:'Buenos días', code:'es-ES', flag:'🇪🇸', lang:'스페인어', meaning:'"좋은 날들"이라는 뜻의 아침 인사예요'},
+      {text:'God morgon', code:'sv-SE', flag:'🇸🇪', lang:'스웨덴어', meaning:'"좋은 아침"이라는 뜻이에요'},
+      {text:'Goedemorgen', code:'nl-NL', flag:'🇳🇱', lang:'네덜란드어', meaning:'"좋은 아침"이라는 뜻이에요'},
+      {text:'Доброе утро', code:'ru-RU', flag:'🇷🇺', lang:'러시아어', meaning:'"어질고 착한 아침"에 가까운 뉘앙스예요'},
+      {text:'صباح الخير', code:'ar-SA', flag:'🇸🇦', lang:'아랍어', meaning:'"좋은 아침"이라는 뜻이에요'},
+      {text:'Bom dia', code:'pt-PT', flag:'🇵🇹', lang:'포르투갈어', meaning:'"좋은 날"이라는 뜻의 아침 인사예요'},
+      {text:'Καλημέρα', code:'el-GR', flag:'🇬🇷', lang:'그리스어', meaning:'"좋은 날"이라는 뜻이에요'},
+      {text:'Günaydın', code:'tr-TR', flag:'🇹🇷', lang:'튀르키예어', meaning:'"날이 밝기를"이라는 뉘앙스의 인사예요'},
+      {text:'Selamat pagi', code:'id-ID', flag:'🇮🇩', lang:'인도네시아어', meaning:'"평안한 아침 되세요"라는 뜻이에요'},
+      {text:'Chào buổi sáng', code:'vi-VN', flag:'🇻🇳', lang:'베트남어', meaning:'"아침 인사드립니다"라는 뜻이에요'},
+      {text:'สวัสดีตอนเช้า', code:'th-TH', flag:'🇹🇭', lang:'태국어', meaning:'"안녕하세요, 아침이에요"라는 뜻이에요'},
+      {text:'सुप्रभात', code:'hi-IN', flag:'🇮🇳', lang:'힌디어', meaning:'"아름다운 아침"이라는 뜻이에요'},
+      {text:'בוקר טוב', code:'he-IL', flag:'🇮🇱', lang:'히브리어', meaning:'"좋은 아침"이라는 뜻이에요'},
+      {text:'Dzień dobry', code:'pl-PL', flag:'🇵🇱', lang:'폴란드어', meaning:'"좋은 날"이라는 뜻으로 아침에도 흔히 씁니다'},
+      {text:'Habari za asubuhi', code:'sw-KE', flag:'🇰🇪', lang:'스와힐리어', meaning:'"아침 소식이 어떠세요"라는 뜻의 인사예요'}
+    ];
+
+    var coverEl = document.getElementById('cover');
+    var appEl = document.querySelector('.app');
+    var greetEl = document.getElementById('worldGreeting');
+    var greetCapEl = document.getElementById('worldGreetingCaption');
+    var greetPlayBtn = document.getElementById('btnPlayGreeting');
+    var currentGreeting = null;
+    if(greetEl && greetCapEl && WORLD_GREETINGS.length){
+      var gIdx = Math.floor(Date.now()/86400000) % WORLD_GREETINGS.length;
+      currentGreeting = WORLD_GREETINGS[gIdx];
+      greetEl.textContent = currentGreeting.text;
+      greetCapEl.textContent = currentGreeting.flag+' '+currentGreeting.lang+' 인사말 · '+currentGreeting.meaning;
+    }
+    if(greetPlayBtn){
+      if(!('speechSynthesis' in window) || !window.SpeechSynthesisUtterance){
+        greetPlayBtn.hidden = true;
+      } else {
+        greetPlayBtn.addEventListener('click', function(){
+          if(!currentGreeting) return;
+          try{
+            window.speechSynthesis.cancel();
+            var u = new SpeechSynthesisUtterance(currentGreeting.text);
+            u.lang = currentGreeting.code;
+            u.rate = 0.85;
+            greetPlayBtn.classList.add('playing');
+            u.onend = function(){ greetPlayBtn.classList.remove('playing'); };
+            u.onerror = function(){ greetPlayBtn.classList.remove('playing'); };
+            window.speechSynthesis.speak(u);
+          }catch(e){ greetPlayBtn.classList.remove('playing'); }
+        });
+      }
+    }
+
+    function dismissCover(){
+      if(coverEl && !coverEl.hidden){ coverEl.hidden = true; }
+      if(appEl && appEl.hidden){ appEl.hidden = false; }
+    }
+    if(coverEl){
+      coverEl.addEventListener('click', function(e){
+        var t = e.target.closest('[data-cover-action]');
+        if(t){ dismissCover(); }
+      });
+    }
+    function showCover(){
+      if(appEl && !appEl.hidden){ appEl.hidden = true; }
+      if(coverEl){ coverEl.hidden = false; coverEl.scrollTop = 0; }
+      try{ closeSearch(); }catch(e){}
+      try{ closeSheetFn(); }catch(e){}
+      try{ showTab('home'); }catch(e){}
+    }
+    Array.prototype.slice.call(document.querySelectorAll('[data-cover-return]')).forEach(function(b){
+      b.addEventListener('click', showCover);
+    });
+
+    var views = {
+      home: document.getElementById('view-home'),
+      ad: document.getElementById('view-ad'),
+      design: document.getElementById('view-design'),
+      ai: document.getElementById('view-ai'),
+      ref: document.getElementById('view-ref')
+    };
+    var railBtns = Array.prototype.slice.call(document.querySelectorAll('.rail button'));
+    var tabBtns = Array.prototype.slice.call(document.querySelectorAll('.tabbar button'));
+    var topMark = document.getElementById('topMark');
+    var topTitleEl = document.getElementById('topTitle');
+    var TITLES = {home:'모닝 콜시트', ad:'광고업계 동향', design:'디자인 · 전시', ai:'AI 시그널', ref:'레퍼런스 릴'};
+
+    function showTab(name, opts){
+      opts = opts || {};
+      Object.keys(views).forEach(function(k){ views[k].hidden = (k!==name); });
+      railBtns.forEach(function(b){ b.classList.toggle('active', b.getAttribute('data-tab')===name); });
+      tabBtns.forEach(function(b){ b.classList.toggle('active', b.getAttribute('data-tab')===name); });
+      if(topMark) topMark.style.setProperty('background', COLORS[name] || COLORS.home);
+      if(topTitleEl) topTitleEl.textContent = TITLES[name] || '모닝 콜시트';
+      if(views[name]) views[name].scrollTop = 0;
+      if(opts.clipId){
+        var el = document.getElementById(opts.clipId);
+        if(el){ setTimeout(function(){ el.scrollIntoView({block:'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto':'smooth'}); }, 60); }
+      }
+      closeSearch();
+    }
+
+    railBtns.concat(tabBtns).forEach(function(b){
+      b.addEventListener('click', function(){ showTab(b.getAttribute('data-tab')); });
+    });
+    Array.prototype.slice.call(document.querySelectorAll('[data-goto]')).forEach(function(b){
+      b.addEventListener('click', function(){ showTab(b.getAttribute('data-goto'), {clipId:b.getAttribute('data-clip')}); });
+    });
+
+    /* ---------- search ---------- */
+    var searchRow = document.getElementById('searchRow');
+    var searchInput = document.getElementById('searchInput');
+    var btnSearch = document.getElementById('btnSearch');
+    function closeSearch(){ searchRow.classList.remove('open'); searchInput.value=''; filterCurrent(''); }
+    btnSearch.addEventListener('click', function(){
+      var willOpen = !searchRow.classList.contains('open');
+      searchRow.classList.toggle('open', willOpen);
+      if(willOpen) setTimeout(function(){ searchInput.focus(); }, 180);
+      else filterCurrent('');
+    });
+    function currentTab(){
+      var active = railBtns.concat(tabBtns).find(function(b){ return b.classList.contains('active'); });
+      return active ? active.getAttribute('data-tab') : 'home';
+    }
+    function filterCurrent(q){
+      var tab = currentTab();
+      var view = views[tab];
+      if(!view) return;
+      q = (q||'').trim().toLowerCase();
+      var items = Array.prototype.slice.call(view.querySelectorAll('.card, .clip'));
+      var shown = 0;
+      items.forEach(function(it){
+        var kw = (it.getAttribute('data-kw')||'') + ' ' + it.textContent;
+        var match = !q || kw.toLowerCase().indexOf(q) !== -1;
+        it.hidden = !match;
+        if(match) shown++;
+      });
+      var empty = view.querySelector('.empty');
+      if(empty) empty.hidden = !(q && items.length && shown===0);
+    }
+    searchInput.addEventListener('input', function(){ filterCurrent(searchInput.value); });
+
+    /* ---------- bookmarks ---------- */
+    var STORE_KEY = 'morningCallsheet.bookmarks.v1';
+    function loadBookmarks(){
+      try{ var raw = localStorage.getItem(STORE_KEY); return raw ? JSON.parse(raw) : []; }catch(e){ return []; }
+    }
+    function saveBookmarks(arr){
+      try{ localStorage.setItem(STORE_KEY, JSON.stringify(arr)); }catch(e){}
+    }
+    var bookmarks = loadBookmarks();
+
+    function isSaved(id){ return bookmarks.indexOf(id) !== -1; }
+    function toggleSave(id){
+      var i = bookmarks.indexOf(id);
+      if(i===-1) bookmarks.push(id); else bookmarks.splice(i,1);
+      saveBookmarks(bookmarks);
+      refreshSaveButtons();
+      renderSheet();
+    }
+    function refreshSaveButtons(){
+      Array.prototype.slice.call(document.querySelectorAll('[data-save]')).forEach(function(btn){
+        var id = btn.getAttribute('data-save');
+        btn.classList.toggle('saved', isSaved(id));
+      });
+      var badge = document.getElementById('savedBadge');
+      if(badge){
+        if(bookmarks.length>0){ badge.hidden=false; badge.textContent = bookmarks.length; }
+        else{ badge.hidden = true; }
+      }
+    }
+    Array.prototype.slice.call(document.querySelectorAll('[data-save]')).forEach(function(btn){
+      btn.addEventListener('click', function(e){
+        e.preventDefault(); e.stopPropagation();
+        toggleSave(btn.getAttribute('data-save'));
+      });
+    });
+
+    var sheet = document.getElementById('sheet');
+    var sheetBackdrop = document.getElementById('sheetBackdrop');
+    var sheetList = document.getElementById('sheetList');
+    function openSheet(){ sheet.classList.add('open'); sheetBackdrop.classList.add('open'); renderSheet(); }
+    function closeSheetFn(){ sheet.classList.remove('open'); sheetBackdrop.classList.remove('open'); }
+    document.getElementById('btnSaved').addEventListener('click', openSheet);
+    document.getElementById('btnCloseSheet').addEventListener('click', closeSheetFn);
+    sheetBackdrop.addEventListener('click', closeSheetFn);
+
+    function renderSheet(){
+      sheetList.innerHTML = '';
+      if(bookmarks.length===0){
+        var p = document.createElement('div');
+        p.className = 'empty';
+        p.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 3h12v18l-6-4-6 4V3z"/></svg><p>저장한 아이템이 없습니다.<br>카드의 별 아이콘을 눌러보세요.</p>';
+        sheetList.appendChild(p);
+        return;
+      }
+      bookmarks.forEach(function(id){
+        var sec = SECOF[id] || 'home';
+        var row = document.createElement('button');
+        row.className = 'sheet-item';
+        row.innerHTML = '<span class="dot" style="--sc:'+COLORS[sec]+'"></span><span class="txt">'+(LABELS[id]||id)+'<small>'+TITLES[sec]+'</small></span>';
+        var rm = document.createElement('span');
+        rm.className = 'rm';
+        rm.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+        rm.addEventListener('click', function(e){ e.stopPropagation(); toggleSave(id); });
+        row.appendChild(rm);
+        row.addEventListener('click', function(){
+          closeSheetFn();
+          var clipId = id.indexOf('ref-')===0 ? id.replace('ref-','clip-') : null;
+          showTab(sec, clipId?{clipId:clipId}:{});
+        });
+        sheetList.appendChild(row);
+      });
+    }
+
+    refreshSaveButtons();
+    showTab('home');
+  }catch(e){}
+})();
+</script>
